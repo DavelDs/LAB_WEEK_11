@@ -1,0 +1,9 @@
+1. Bagian kode yang menangani penyimpanan gambar adalah proses ketika callback TakePicture() selesai dan memanggil fungsi penyimpanan. Kodenya adalah:
+“takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { providerFileManager.insertImageToStore(photoInfo) }”
+Serta bagian inti yang benar-benar menyalin file ke MediaStore:
+“private fun insertToStore(fileInfo: FileInfo, contentUri: Uri, contentValues: ContentValues) { executor.execute { val insertedUri = contentResolver.insert(contentUri, contentValues); insertedUri?.let { val inputStream = contentResolver.openInputStream(fileInfo.uri); val outputStream = contentResolver.openOutputStream(insertedUri); IOUtils.copy(inputStream, outputStream) } } }”.
+
+2. Atribut pertama yaitu uri adalah URI yang diberikan oleh FileProvider dan digunakan kamera sebagai lokasi sementara untuk menyimpan hasil foto sebelum dipindahkan ke MediaStore.
+Atribut keempat yaitu relativePath adalah path folder tujuan di MediaStore tempat file akan disimpan secara permanen, seperti folder Pictures atau Movies sehingga file dapat muncul di Gallery.
+
+3. Ketika user menekan tombol Photo, aplikasi memeriksa permission lalu memanggil openImageCapture(), yang menghasilkan file sementara dan URI melalui FileProvider. Kamera dibuka menggunakan URI tersebut dan hasil fotonya ditulis ke file sementara. Setelah kamera selesai, callback TakePicture() dipanggil dan aplikasi menjalankan insertImageToStore(). File sementara kemudian disalin ke MediaStore menggunakan InputStream dan OutputStream melalui fungsi insertToStore(). Setelah proses ini selesai, file tersimpan di folder Pictures dalam MediaStore dan otomatis muncul di Gallery.
